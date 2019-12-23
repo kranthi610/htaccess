@@ -1,0 +1,59 @@
+#1) Turn off directory listing
+	Options -Indexes
+
+#2) Turn on directory listing
+	#Options +Indexes
+
+#3) Default page is index.php
+	#DirectoryIndex index.php
+#4) Ignore displaying files with .txt and .ico in direcotry listing
+	#IndexIgnore *.txt *.ico
+	#IndexIgnore * # ignore displaying everything
+
+#5) Authenticating Files  ( htpasswd -c .htpaswd 'username')
+	
+	#AuthType Basic
+	#AuthName "Restricted Content"
+	#AuthUserFile /var/www/html/php_mvc/.htpasswd
+	#Require valid-user
+
+#6) rewriting urls
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	#if the file or directory doesn't exist
+		RewriteCond %{REQUEST_FILENAME} !-d
+		RewriteCond %{REQUEST_FILENAME} !-f
+	#then pass everyhing as a query string to index.php
+		RewriteRule ^(.*)$ index.php?q=$1 [L,QSA]
+		#RewriteRule ^(.*)$ index.php [L]
+</IfModule>
+
+#ErrorDocument 404 /var/www/html/php_mvc/error_404.php
+
+#7) Redirect user to google
+	Redirect 301 / https://gmail.com/
+	
+#8) caching
+<ifModule mod_headers.c>
+	<filesMatch "\\.(jpg|jpeg|png|gif|swf|svg)$">
+	Header set Cache-Control "max-age=64800, public"
+	</filesMatch>
+</ifModule>
+
+
+
+#9) load index.php if custom url is specified
+#NC is for matching case insensitive. (It matches both CUSTOM and custom)
+	RewriteRule ^custom public/index.php [NC,L]
+
+#10) Rewrite for /user.php?user=zxxzz
+	RewriteRule ^user/([0-9a-zA-Z]+) public/index.php?u=$1 [NC,L]
+	RewriteRule ^article/([0-9a-zA-Z]+)/([0-9]+) public/index.php?u=$1&p=$2 [NC,L]
+
+
+#11) check if we are accessing for file
+	RewriteCond %{REQUEST_FILENAME} !-f
+	#if yes then load file even without dot
+	RewriteRule ^([^\.]+)$ $1.php [NC,L]
+	#if requested file is hello then load index
+	RewriteRule ^hello public/index.php
